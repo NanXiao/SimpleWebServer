@@ -2,14 +2,14 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 )
 
 type jsonReq struct {
-	url string
-	method string
+	url     string
+	method  string
 	jsonstr []byte
 }
 

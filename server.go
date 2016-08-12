@@ -1,36 +1,36 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"github.com/gorilla/mux"
-	"encoding/json"
+	"reflect"
 	"strconv"
 	"sync"
-	"reflect"
 )
 
 const (
-	statusOK = "ok"
-	statusNoSpecifiedID = "Can't find the specified transaction ID"
+	statusOK                       = "ok"
+	statusNoSpecifiedID            = "Can't find the specified transaction ID"
 	statusTransactionEncodingError = "Transaction encoidng is error"
-	statusNoSpecifiedType = "Can't find the specified type"
+	statusNoSpecifiedType          = "Can't find the specified type"
 )
 
 type transactionID uint64
 
 type Transaction struct {
-	Amount		float64		`json:"amount"`
-	TransType	string		`json:"type"`
-	ParentID	transactionID	`json:"parent_id,omitempty"`
+	Amount    float64       `json:"amount"`
+	TransType string        `json:"type"`
+	ParentID  transactionID `json:"parent_id,omitempty"`
 }
 
 type TransactionSum struct {
-	Sum	float64	`json:"sum"`
+	Sum float64 `json:"sum"`
 }
 
 type TransactionStatus struct {
-	Status	string 	`json:"status"`
+	Status string `json:"status"`
 }
 
 var transactionTable map[transactionID]*Transaction
@@ -47,19 +47,19 @@ type routeMethod struct {
 	handlerFunc http.HandlerFunc
 }
 
-var routeMethods = []routeMethod {
+var routeMethods = []routeMethod{
 	{method: "PUT", pattern: "/transaction/{transaction_id}", handlerFunc: putTransactionHandler},
 	{method: "GET", pattern: "/transaction/{transaction_id}", handlerFunc: getTransactionHandler},
 	{method: "GET", pattern: "/types/{type}", handlerFunc: getTypeHandler},
 	{method: "GET", pattern: "/sum/{transaction_id}", handlerFunc: getSumHandler},
 }
 
-func convertTransactionID(s string) (transactionID, error)  {
+func convertTransactionID(s string) (transactionID, error) {
 	v, err := strconv.ParseUint(s, 10, 64)
 	return transactionID(v), err
 }
 
-func sendResponse(w http.ResponseWriter, v interface{})  {
+func sendResponse(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if reflect.TypeOf(v).String() == "main.TransactionStatus" {
@@ -107,10 +107,10 @@ func putTransactionHandler(w http.ResponseWriter, r *http.Request) {
 		if _, ok := sumTable[trans.ParentID]; ok {
 			sumTable[trans.ParentID].Sum += trans.Amount
 		} else {
-			sumTable[trans.ParentID] = &TransactionSum{Sum:trans.Amount}
+			sumTable[trans.ParentID] = &TransactionSum{Sum: trans.Amount}
 		}
 	} else {
-		sumTable[id] = &TransactionSum{Sum:trans.Amount}
+		sumTable[id] = &TransactionSum{Sum: trans.Amount}
 	}
 	sumTableLock.Unlock()
 
